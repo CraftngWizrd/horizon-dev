@@ -3141,7 +3141,10 @@ pub fn client_as(tag: &str, who: Option<&account::Player>) -> Result<Command, St
         return Err(error);
     }
     let session = match who {
-        None => account::session_for_game(&game_home(), false).map_err(|e| e.to_string()),
+        // The window's developer option (`Settings::dev_offline`) lets the command line play
+        // offline without an owner too; the game still comes from the player's own install.
+        None => account::session_for_game(&game_home(), Settings::load().dev_offline)
+            .map_err(|e| e.to_string()),
         Some(who) => account::session_for_game_as(&game_home(), who),
     }
     .map_err(|refused| format!("{refused} {}", crate::i18n::tr(SIGN_IN_HINT)))?;
